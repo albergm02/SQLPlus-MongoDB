@@ -16,7 +16,7 @@ The exercises are based on the following logical model of a **library network da
 
 ### 🧩 Entity-Relationship Model:
 
-> ![ER Schema](https://imgur.com/a/3Z1UqMv)  
+> ![ER Schema](https://imgur.com/gallery/entity-relationship-sbd-3Z1UqMv)  
 
 If you want to see the complete table structure, refer to the [`Tablas.pdf`](./Tablas.pdf) provided in the repository.
 
