@@ -1,0 +1,24 @@
+#include <stdio.h>
+
+exec sql include sqlca;
+
+int main ()
+{
+   exec sql begin declare section;
+        char oracleid[]="/";
+        int numprest; int codsuc;
+   exec sql end declare section;
+
+   printf ("Introduzca codigo de sucursal: ");
+   scanf ("%d", &codsuc);
+
+   exec sql connect :oracleid;
+   exec sql select count(*) into :numprest
+       from prestamo
+       where cod_suc = :codsuc and fecha_dev is null;
+   if (sqlca.sqlcode!=0)
+     printf ("%s\n", sqlca.sqlerrm.sqlerrmc);
+   else printf ("La suc %d tiene %d prestamos\n",
+                 codsuc, numprest);
+   exec sql commit work release;
+}

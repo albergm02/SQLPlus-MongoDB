@@ -1,0 +1,37 @@
+/*
+
+Sesión 8: Introducción a SQL Inmerso
+
+6. Obtener el número de préstamos en un año concreto contabilizados para una sucursal a partir del código de la sucursal y el año elegido.
+
+*/
+
+
+#include <stdio.h>
+
+exec sql include sqlca;
+
+int main ()
+{
+exec sql begin declare section;
+	int num, cod_suc, anno;
+	char oracleid[]="/";
+exec sql end declare section;
+
+printf ("Introduzca el codigo de suscursal a consultar: ");
+scanf ("%d", &cod_suc);
+
+printf ("Introduzca el agno a consultar: ");
+scanf ("%d", &anno);
+
+exec sql connect :oracleid;
+if (sqlca.sqlcode!=0) printf ("CONEXION: %d, %s\n", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+exec sql select count(*) into :num from univ.prestamo 
+     where cod_suc=:cod_suc and to_char(fecha_ini, 'yyyy')=:anno;
+
+if (sqlca.sqlcode == 0)
+     printf ("La sucursal %d tuvo %d prestamos en el agno %d\n", cod_suc, num, anno);
+else printf ("SELECT: %d, %s\n", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+exec sql commit work release; 
+}

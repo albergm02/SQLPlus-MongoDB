@@ -1,0 +1,70 @@
+
+
+/*
+
+Variables indicación
+
+2. Escribir un programa que solicite la entrada por teclado de los datos de un
+nuevo autor y haga la inserción correspondiente en la tabla AUTOR. Se tendrá en
+cuenta que el año de fallecimiento será nulo para autores vivos. 
+
+*/
+
+
+
+
+
+exec sql include sqlca;
+
+int main ()
+{
+  char respuesta;
+  exec sql begin declare section;
+        char oracleid[]="/";
+        char nom[51], ape[51];
+        int cod, anac, afall, codnac;
+        short vind;
+  exec sql end declare section;
+
+
+  exec sql connect :oracleid;
+
+  do {
+        printf ("Introduzca nombre autor: ");
+        scanf (" %s", nom);
+        printf ("Introduzca apellido autor: ");
+        scanf (" %s", ape);
+        printf ("Introduzca agno nacimiento del autor: ");
+        scanf (" %d", &anac);
+        printf ("El autor ha fallecido? (S/N)");
+        scanf (" %c", &respuesta);
+        if (respuesta=='s' || respuesta=='S')
+        {
+                vind=0;
+                printf ("Introduzca agno muerte del autor: ");
+                scanf (" %d", &afall);
+
+        }
+        else vind=-1;
+        printf ("Introduzca codigo de nacion del autor: ");
+        scanf (" %d", &codnac);
+
+        exec sql select max(codigo) + 1 into :cod from autor;
+        exec sql insert into autor
+          values (:cod, :nom, :ape, :anac, :afall:vind, :codnac);
+        exec sql commit;
+
+        printf ("Desea introducir nuevo autor? (S/N) ");
+        scanf (" %c", &respuesta);
+
+  }
+  while (respuesta=='S' || respuesta =='s');
+
+
+
+  exec sql commit work release;
+
+
+
+
+}

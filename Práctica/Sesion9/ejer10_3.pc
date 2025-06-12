@@ -1,0 +1,67 @@
+
+/*
+Variables indicación
+
+3. Escribir un programa en el que se obtenga un listado de todos los libros existentes
+en la biblioteca mostrando el ISBN y el título. Para el título se mostrarán solo los 30
+primeros caracteres, seguidos de puntos suspensivos (…) en el caso en que el título
+no pueda mostrarse completo. La siguiente imagen muestra un fragmento de la
+salida del programa.
+
+*/
+
+
+
+
+#include <stdio.h>
+
+exec sql include sqlca;
+
+void main ()
+{
+exec sql begin declare section;
+char oracleid []="/";
+char isbn[11];
+short v_ind;
+char titulo[31];
+exec sql end declare section;
+
+exec sql declare micur cursor for
+select isbn, titulo
+ from univ.libro ;
+
+
+
+exec sql connect :oracleid;
+if (sqlca.sqlcode!=0) printf ("CONEXION: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+exec sql open micur;
+if (sqlca.sqlcode!=0) printf ("OPEN: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+exec sql fetch micur into :isbn, :titulo:v_ind;
+
+if (sqlca.sqlcode!=0) printf ("FETCH 1: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+printf ("ISBN   \tTITULO\n\n");
+while (sqlca.sqlcode==0) {
+	if (v_ind) 
+		printf ("%s\t %s...\n", isbn, titulo);
+	else    printf ("%s\t %s\n", isbn, titulo);
+
+	exec sql fetch micur into :isbn, :titulo:v_ind;
+
+
+	if (sqlca.sqlcode!=0 && sqlca.sqlcode!=100) 
+		printf ("FETCH 2: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+	}
+
+exec sql close micur;
+exec sql commit work release;
+}
+
+	
+	

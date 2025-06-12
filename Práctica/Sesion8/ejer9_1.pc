@@ -1,0 +1,57 @@
+/* Probar con ISBN 5024728 */
+
+#include <stdio.h>
+
+exec sql include sqlca;
+
+void main ()
+{
+exec sql begin declare section;
+char oracleid []="/";
+int isbn, codigosuc;
+char nombre[21], ape_1[21], ape_2[21];
+exec sql end declare section;
+
+exec sql declare micur cursor for
+select cod_suc, nombre, ape_1, ape_2
+ from univ.prestamo p, univ.lector l 
+ where isbn=:isbn and fecha_dev is null and p.cod_lector=l.codigo
+ order by 1, 3, 4, 2;
+
+
+int sucactual=0;
+printf ("Introduzca ISBN: ");
+scanf ("%d", &isbn);
+
+
+exec sql connect :oracleid;
+if (sqlca.sqlcode!=0) printf ("CONEXION: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+exec sql open micur;
+if (sqlca.sqlcode!=0) printf ("OPEN: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+exec sql fetch micur into :codigosuc, :nombre, :ape_1, :ape_2;
+
+if (sqlca.sqlcode!=0) printf ("FETCH 1: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+while (sqlca.sqlcode==0) {
+	if (codigosuc != sucactual) {
+		printf ("SUCURSAL:\t %d\n", codigosuc);
+		sucactual = codigosuc;
+		}
+
+	printf ("\t\t%s\t%s\t%s\n", nombre, ape_1, ape_2);
+	exec sql fetch micur into :codigosuc, :nombre, :ape_1, :ape_2;
+
+	if (sqlca.sqlcode!=0) printf ("FETCH 2: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+	}
+
+exec sql close micur;
+exec sql commit work release;
+}
+
+	
+	

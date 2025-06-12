@@ -1,0 +1,90 @@
+/*  SESION TRANSACCIONES
+9. Escribir un programa en SQL inmerso que gestione la venta de plazas de un viaje
+asegurando la ausencia de problemas de concurrencia.
+
+
+Suponemos que la informacion sobre los asientos libres esta en la tabla TEST:
+create table test
+(id integer not null primary key,       // id coincide con el numero de plaza (num de asiento) del viaje
+libre integer default 1,                // libre vale 1 si la plaza esta libre y 0 si esta ocupada
+text varchar(20) default '');           // text contiene un identificador del cliente que ha comprado la plaza
+
+*/
+
+/********** SOLUCION INCORRECTA *********/
+/** 
+ Es una solucion incorrecta porque, aunque establece un nivel de aislamiento serializable que asegura la ausencia de consultas no repetibles,
+ incluye operaciones de entrada de usuario en medio de la transaccion, lo que hace que los tiempos de bloqueo puedan ser muy largos y se 
+ limite mucho la posibilidad de concurrencia
+
+**/
+
+#include <stdio.h>
+
+exec sql include sqlca;
+
+void main ()
+{
+exec sql begin declare section;
+char oracleid []="/";
+struct tupla_ {int id, libre; char text[21];} tupla_test;
+exec sql end declare section;
+int hecho = 0;
+char resp;
+
+exec sql declare micur1 cursor for
+select id from test
+ where  libre=1;
+
+
+exec sql connect :oracleid;
+
+printf ("Introduzca el nombre para la reserva: ");
+scanf(" %s", &tupla_test.text);
+
+do
+{
+
+/* Iniciamos una transaccion de nivel de aislamiento serializable, lo que va a provocar bloqueos que obstaculizaran 
+   el acceso de otros usuarios. Deberiamos garantizar que esa transaccion fuese rapida
+*/
+
+	exec sql SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+        exec sql open micur1;
+        if (sqlca.sqlcode!=0) printf ("OPEN1: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+        exec sql fetch micur1 into :tupla_test.id;
+        while (sqlca.sqlcode==0) {
+                printf ("El asiento %i esta libre.\n", tupla_test.id);
+                exec sql fetch micur1 into :tupla_test.id;
+        }
+        exec sql close micur1;
+
+        printf ("Introduzca el asiento que desea: ");
+        scanf("%i", &tupla_test.id);
+
+	hecho = 0;
+        exec sql update test set libre=0, text=:tupla_test.text where id=:tupla_test.id;
+        if (sqlca.sqlcode==0) {
+                printf ("La operacion esta casi acabada. Confirma que la quiere realizar? (s/n): ");
+                scanf (" %c", &resp);	// **MAL** Operacion de entrada de usuario. Puede tardar mucho, alargando los bloqueos
+                
+                if (resp=='s' || resp=='S') {
+			exec sql commit;
+                	if (sqlca.sqlcode==0) {
+                        	hecho = 1;
+                        	printf ("Operacion realizada. Plaza %i asignada a %s\n",
+                                  	tupla_test.id, tupla_test.text);
+			}
+                }
+        }
+        if (!hecho) {
+                exec sql rollback;
+                printf ("No ha sido posible asignar ese asiento. Repita la operacion\n");
+        }
+}
+while (!hecho);
+
+exec sql commit work release;
+}
+
+

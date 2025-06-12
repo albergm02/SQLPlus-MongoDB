@@ -1,0 +1,60 @@
+
+#include <stdio.h>
+
+exec sql include sqlca;
+
+void main ()
+{
+exec sql begin declare section;
+char oracleid []="/";
+int cod_nac, ano_nac, contador;
+char nombre[51], apellidos[51], nom_nac[21];
+exec sql end declare section;
+
+exec sql declare micur cursor for
+select n.codigo, n.nombre, a.nombre, apellido, ano_nac
+ from univ.autor a, univ.nacionalidad n 
+ where a.cod_nacion=n.codigo
+ order by 2, 1, 4, 3;
+
+
+int nacactual=0;
+
+exec sql connect :oracleid;
+if (sqlca.sqlcode!=0) printf ("CONEXION: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+exec sql open micur;
+if (sqlca.sqlcode!=0) printf ("OPEN: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+exec sql fetch micur into :cod_nac, :nom_nac, :nombre, :apellidos, :ano_nac;
+
+if (sqlca.sqlcode!=0) printf ("FETCH 1: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+while (sqlca.sqlcode==0) {
+	if (cod_nac != nacactual) {
+		printf ("NACIONALIDAD:\t %s\n\n", nom_nac);
+		nacactual = cod_nac;
+		exec sql select count(*) into :contador from univ.autor where cod_nacion=:cod_nac;
+		if (sqlca.sqlcode!=0 && sqlca.sqlcode!=100) 
+			printf ("SELECT: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);		
+		printf ("AUTORES:\t %d\n\n", contador);
+		printf ("%-20s %-20s %s\n", "APELLIDOS", "NOMBRE", "ANO NACIMIENTO");
+
+		}
+
+	printf ("%-20s %-20s %d\n", nombre, apellidos, ano_nac);
+	exec sql fetch micur into :cod_nac, :nom_nac, :nombre, :apellidos, :ano_nac;
+
+	if (sqlca.sqlcode!=0 && sqlca.sqlcode!=100) 
+		printf ("FETCH 2: %d, %s", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+
+	}
+
+exec sql close micur;
+exec sql commit work release;
+}
+
+	
+	

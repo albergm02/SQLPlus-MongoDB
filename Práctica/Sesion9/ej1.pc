@@ -1,0 +1,119 @@
+exec sql include sqlca;
+
+int main ()
+{
+   exec sql begin declare section;
+        char oracleid[]="/";
+        char titulo[61];
+        char isbn[11];
+        char nomaut[51], apeaut[51];
+        char nomlec[21], ape1lec[21], ape2lec[21];
+        char f_ini[15], f_dev[15];
+        int  codigo_suc;
+        short int v_ind1, v_ind2;
+
+   exec sql end declare section;
+
+   int suc_actual=-1;
+
+   printf ("Introduzca ISBN: ");
+   scanf ("%s", isbn);
+
+   exec sql connect :oracleid;
+   exec sql select titulo into :titulo
+
+        from libro where isbn=:isbn;
+
+   if (sqlca.sqlcode)
+        printf ("ERROR Tit: %s\n", sqlca.sqlerrm.sqlerrmc);
+
+   printf ("ISBN: %s\nTITULO: %s\n", isbn, titulo);
+
+   exec sql declare curautor cursor for
+       select nombre, apellido from escribe, autor
+       where isbn=:isbn and cod_autor=codigo;
+
+   exec sql open curautor;
+   if (sqlca.sqlcode)
+        printf ("ERROR Aut: %s\n", sqlca.sqlerrm.sqlerrmc);
+
+   printf("AUTOR:");
+   exec sql fetch curautor into :nomaut, :apeaut;
+   while (sqlca.sqlcode==0)
+   {
+        printf ("\t%s %s\n", nomaut, apeaut);
+        exec sql fetch curautor into :nomaut, :apeaut;
+   }
+
+   exec sql close curautor;
+
+
+   exec sql declare curpres cursor for
+       select cod_suc, ape_1, ape_2, nombre,
+              fecha_ini, fecha_dev
+       from prestamo p, lector l
+       where isbn=:isbn and p.cod_lector=l.codigo
+       order by 1, 2, 3, 4;
+
+
+
+   exec sql open curpres;
+   if (sqlca.sqlcode)
+        printf ("ERROR Pres: %s\n", sqlca.sqlerrm.sqlerrmc);
+
+   exec sql fetch curpres into :codigo_suc, :ape1lec, :ape2lec, :nomlec, :f_ini, :f_dev:v_ind1;
+   while (sqlca.sqlcode==0)
+   {
+      if (codigo_suc!=suc_actual) {
+        printf ("%i", codigo_suc);
+        suc_actual=codigo_suc;
+      }
+
+      printf ("\t%10s %10s, %10s\t%s\t", ape1lec, ape2lec, nomlec, f_ini);
+      if (v_ind1==-1) printf("PENDIENTE\n");
+      else printf ("%s\n", f_dev);
+
+
+      exec sql fetch curpres into :codigo_suc, :ape1lec, :ape2lec, :nomlec, :f_ini, :f_dev:v_ind1;
+   }
+
+   exec sql close curpres;
+
+
+   exec sql commit work release;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

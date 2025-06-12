@@ -1,0 +1,35 @@
+/*
+
+Sesión 8: Introducción a SQL Inmerso
+
+2. Obtener el número de autores pertenecientes a una nacionalidad a partir del código de nacionalidad introducido por el usuario.
+
+*/
+
+
+
+#include <stdio.h>
+
+exec sql include sqlca;
+
+int main ()
+{
+exec sql begin declare section;
+	int num;
+	int cod; char oracleid[]="/";
+exec sql end declare section;
+
+printf ("Introduzca el codigo de la nacionalidad a consultar: ");
+scanf ("%d", &cod);
+
+exec sql connect :oracleid;
+if (sqlca.sqlcode!=0) printf ("CONEXION: %d, %s\n", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+exec sql select count(*) into :num from univ.autor where cod_nacion = :cod;
+if (sqlca.sqlcode!=0) printf ("SELECT: %d, %s\n", sqlca.sqlcode, sqlca.sqlerrm.sqlerrmc);
+
+if (sqlca.sqlcode == 0)
+     printf ("El numero de autores de la nacionalidad con codigo %d es %d\n", cod, num);
+else printf ("No existe ningun autor con la nacionalidad de codigo %d\n", cod);
+exec sql commit work release; 
+}
