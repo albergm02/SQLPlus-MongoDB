@@ -16,8 +16,7 @@ The exercises are based on the following logical model of a **library network da
 
 ### 🧩 Entity-Relationship Model:
 
-> ![ER Schema](https://upload.wikimedia.org/wikipedia/commons/5/5c/Relational_Database_Model.png)  
-> *(⚠️ Placeholder image – replace with real one if available as .png or .jpg)*
+> ![ER Schema](https://imgur.com/a/3Z1UqMv)  
 
 If you want to see the complete table structure, refer to the [`Tablas.pdf`](./Tablas.pdf) provided in the repository.
 
