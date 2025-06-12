@@ -18,7 +18,7 @@ The exercises are based on the following logical model of a **library network da
 
 > ![ER Schema](https://i.imgur.com/kSkxVbm.png)  
 
-If you want to see the complete table structure, refer to the [`Tablas.pdf`](./Tablas.pdf) provided in the repository.
+If you want to see the complete table structure, refer to the [`Tablas.pdf`](./Práctica/Tablas.pdf) provided in the repository.
 
 ### 🔢 Tables Used:
 
